@@ -1,18 +1,11 @@
-// Service worker for the "Learning games" offline app.
+// Service worker for the standalone "TOEFL Voca Trainer" app.
 // Strategy: cache-first, refresh in the background, fall back to cache when offline.
-// This covers same-origin pages AND cross-origin assets (Google Fonts, SheetJS from
-// cdnjs) automatically, since every fetch the page makes passes through here.
 
-const CACHE_NAME = 'learning-games-v4';
+const CACHE_NAME = 'toefl-voca-trainer-v1';
 
-// Core pages/assets to pre-cache the first time the service worker installs
-// (this first install still needs to happen while online).
 const CORE_ASSETS = [
   './',
-  './index.html',
-  './sentence_card_game.html',
-  './word_match_game.html',
-  './speaking_practice_game.html',
+  './voca_trainer.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -23,8 +16,6 @@ self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function (cache) {
-        // addAll fails all-or-nothing; use individual puts so one failed
-        // (e.g. CDN blip) asset doesn't block the whole install.
         return Promise.all(
           CORE_ASSETS.map(function (url) {
             return fetch(url).then(function (res) {
@@ -66,10 +57,8 @@ self.addEventListener('fetch', function (event) {
           return response;
         })
         .catch(function () {
-          // Offline and not cached: for page navigations, fall back to the
-          // cached index so the app shell still opens instead of erroring out.
           if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
+            return caches.match('./voca_trainer.html');
           }
           return cached;
         });
